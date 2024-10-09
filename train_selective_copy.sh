@@ -20,7 +20,7 @@ python -m ensurepip --upgrade
 python -m pip install --upgrade pip
 python -m pip install torch==2.4.0 torchvision==0.19.0 torchaudio==2.4.0 --index-url https://download.pytorch.org/whl/cu121
 python -m pip install wheel packaging setuptools
-python -m pip install causal-conv1d>=1.4.0
+python -m pip install causal-conv1d
 python -m pip install mamba-ssm
 python selective_copying_mamba.py
 # wget https://github.com/state-spaces/mamba/releases/download/v2.2.2/mamba_ssm-2.2.2+cu122torch2.4cxx11abiFALSE-cp39-cp39-linux_x86_64.whl

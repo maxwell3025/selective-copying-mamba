@@ -2,7 +2,8 @@
 training_config = {
     "batch_size": 64,
     "learning_rate": 0.0001,
-    "num_steps": 400000
+    "num_steps": 400000,
+    "val_interval": 1000
 }
 
 # Configuration for dataset

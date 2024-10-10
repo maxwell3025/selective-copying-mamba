@@ -6,6 +6,7 @@ import time
 from mamba_ssm.models.mixer_seq_simple import MambaLMHeadModel
 from config import training_config, dataset_config, MambaConfig
 from data_generator import generate_dataset
+import wandb
 
 # Setup logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
@@ -21,6 +22,26 @@ model = MambaLMHeadModel(mambaconfig, device=device)
 
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(model.parameters(), lr=training_config["learning_rate"])
+
+# Validation function
+def validate(step=-1):
+    model.eval()
+    with torch.no_grad():
+        correct = 0
+        total = 0
+        inputs, targets = generate_dataset(dataset_config, training_config)
+        inputs = inputs.to(device)
+        targets = targets.to(device)
+        outputs = model(inputs, num_last_tokens=dataset_config['l_memorize']).logits
+        total += targets.size(0) * targets.size(1)
+        correct += (outputs.argmax(1) == targets).sum().item()
+        accuracy = 100 * correct / total
+        logger.info(f'Validation Accuracy: {accuracy:.2f}%')
+        if step != -1:
+            wandb.log({
+                "step": step,
+                "accuracy": accuracy
+            })
 
 # Training function
 def train():
@@ -46,26 +67,16 @@ def train():
         correct += (outputs.argmax(1) == targets).sum().item()
         accuracy = 100 * correct / total
         logger.info(f'Step [{step+1}/{training_config["num_steps"]}], Loss: {step_loss/training_config["batch_size"]:.4f}, Accuracy: {accuracy:.2f}%')
+        if step % training_config["val_interval"] == 0:
+            validate(step)
 
     end_time = time.time()
     logger.info(f'Training completed in: {(end_time - start_time)/60:.2f} minutes')
 
-# Validation function
-def validate():
-    model.eval()
-    with torch.no_grad():
-        correct = 0
-        total = 0
-        inputs, targets = generate_dataset(dataset_config, training_config)
-        inputs = inputs.to(device)
-        targets = targets.to(device)
-        outputs = model(inputs, num_last_tokens=dataset_config['l_memorize']).logits
-        total += targets.size(0) * targets.size(1)
-        correct += (outputs.argmax(1) == targets).sum().item()
-        accuracy = 100 * correct / total
-        logger.info(f'Validation Accuracy: {accuracy:.2f}%')
-
 if __name__ == '__main__':
+    wandb.login()
+    run = wandb.init(
+        project="selective-copying-mamba",
+    )
     train()
     validate()
-

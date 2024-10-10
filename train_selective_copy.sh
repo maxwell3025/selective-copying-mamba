@@ -3,10 +3,11 @@
 #SBATCH --mem=8192  # Requested Memory
 #SBATCH -p gpu-preempt  # Partition
 #SBATCH -G 1  # Number of GPUs
-#SBATCH -t 01:00:00  # Job time limit
+#SBATCH -t 01:30:00  # Job time limit
 #SBATCH -o train_mamba_%j.out  # %j = job ID
 #SBATCH --constraint sm_70  # %j = job ID
 
+mkdir -p /work/pi_jaimedavila_umass_edu/maxwelltang_umass_edu/selective-copying-mamba-maxwell3025
 cd /work/pi_jaimedavila_umass_edu/maxwelltang_umass_edu/selective-copying-mamba-maxwell3025
 module load cuda/12.2.1
 if ! test -d .venv; then
@@ -22,6 +23,8 @@ python -m pip install torch==2.4.0 torchvision==0.19.0 torchaudio==2.4.0 --index
 python -m pip install wheel packaging setuptools
 python -m pip install causal-conv1d
 python -m pip install mamba-ssm
+python -m pip install wandb
+export WANDB_API_KEY=6701a2ec1a7ccf30a6e05cffd0a9281b1de3b41c
 python selective_copying_mamba.py
 # wget https://github.com/state-spaces/mamba/releases/download/v2.2.2/mamba_ssm-2.2.2+cu122torch2.4cxx11abiFALSE-cp39-cp39-linux_x86_64.whl
 # wget https://github.com/Dao-AILab/causal-conv1d/releases/download/v1.4.0/causal_conv1d-1.4.0+cu122torch2.4cxx11abiFALSE-cp39-cp39-linux_x86_64.whl
